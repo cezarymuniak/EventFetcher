@@ -121,14 +121,9 @@
 				AA15BF2E2A1A8BB900183A89 /* Views */,
 				AA15BF272A1A806100183A89 /* Models */,
 				AA15BEF12A1A7EA800183A89 /* AppDelegate.swift */,
-				AA15BEF52A1A7EA800183A89 /* MainViewController.swift */,
-				AA15BEF72A1A7EA800183A89 /* MainViewController.storyboard */,
 				AA15BEFA2A1A7EA900183A89 /* Assets.xcassets */,
 				AA15BEFC2A1A7EA900183A89 /* LaunchScreen.storyboard */,
 				AA15BEFF2A1A7EA900183A89 /* Info.plist */,
-				AA15BF212A1A800E00183A89 /* EventsViewController.swift */,
-				AA15BF232A1A801A00183A89 /* ScheduleViewController.swift */,
-				AA15BF252A1A804D00183A89 /* PlaybackViewController.swift */,
 			);
 			path = EventFetcher;
 			sourceTree = "<group>";
@@ -163,6 +158,11 @@
 		AA15BF2E2A1A8BB900183A89 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				AA15BEF52A1A7EA800183A89 /* MainViewController.swift */,
+				AA15BF212A1A800E00183A89 /* EventsViewController.swift */,
+				AA15BF232A1A801A00183A89 /* ScheduleViewController.swift */,
+				AA15BF252A1A804D00183A89 /* PlaybackViewController.swift */,
+				AA15BEF72A1A7EA800183A89 /* MainViewController.storyboard */,
 				AA15BF2F2A1A8BBF00183A89 /* Cells */,
 			);
 			path = Views;
