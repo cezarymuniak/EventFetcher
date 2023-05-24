@@ -28,12 +28,15 @@ class PlaybackViewController: UIViewController {
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        
         let playerLayer = AVPlayerLayer(player: viewModel.player)
         playerLayer.frame = playerView.bounds
         playerView.layer.addSublayer(playerLayer)
+
+        if let gradientButtonLayer = playPauseButton.layer.sublayers?.first as? CAGradientLayer {
+            gradientButtonLayer.frame = playPauseButton.bounds
+        }
     }
-    
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
@@ -53,6 +56,19 @@ class PlaybackViewController: UIViewController {
         
     }
     
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
+        playerView.layer.sublayers?.forEach { $0.removeFromSuperlayer() }
+        let playerLayer = AVPlayerLayer(player: viewModel.player)
+        playerLayer.frame = CGRect(origin: CGPoint.zero, size: size)
+        playerView.layer.addSublayer(playerLayer)
+    }
+    
+    deinit {
+        viewModel.player?.currentItem?.removeObserver(self, forKeyPath: "playbackBufferEmpty")
+    }
+
+    
     func setupViews() {
         let gradientView = UIView(frame: view.bounds)
         view.addSubview(gradientView)
@@ -67,12 +83,14 @@ class PlaybackViewController: UIViewController {
         
         activityIndicator = UIActivityIndicatorView(style: .large)
         activityIndicator?.center = view.center
+        activityIndicator?.hidesWhenStopped = true
         activityIndicator?.startAnimating()
+        viewModel.player?.currentItem?.addObserver(self, forKeyPath: "playbackBufferEmpty", options: .new, context: nil)
+
         
         view.addSubview(activityIndicator ?? UIView())
         playerView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(playerView)
-        
         playPauseButton = UIButton(type: .system)
         playPauseButton.setImage(UIImage(named: "pause"), for: .normal)
         playPauseButton.addTarget(self, action: #selector(playPauseButtonTapped), for: .touchUpInside)
@@ -80,6 +98,13 @@ class PlaybackViewController: UIViewController {
         playPauseButton.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(playPauseButton)
         
+        let gradientButtonLayer = CAGradientLayer()
+        gradientButtonLayer.colors = [UIColor.white.cgColor, UIColor.white.withAlphaComponent(0.0).cgColor]
+        gradientButtonLayer.startPoint = CGPoint(x: 0.5, y: 0.0) // top center
+        gradientButtonLayer.endPoint = CGPoint(x: 0.5, y: 1.0) // bottom center
+        gradientButtonLayer.cornerRadius = playPauseButton.frame.size.width / 2
+
+        playPauseButton.layer.insertSublayer(gradientButtonLayer, at: 0)
         backButton.setImage(UIImage(named: "back"), for: .normal)
         backButton.addTarget(self, action: #selector(backButtonTapped), for: .touchUpInside)
         backButton.translatesAutoresizingMaskIntoConstraints = false
@@ -88,8 +113,8 @@ class PlaybackViewController: UIViewController {
     
     func setupConstrains() {
         NSLayoutConstraint.activate([
-            backButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
-            backButton.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 10),
+            backButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 25),
+            backButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 25),
             backButton.widthAnchor.constraint(equalToConstant: 30),
             backButton.heightAnchor.constraint(equalTo: playPauseButton.widthAnchor)
         ])
@@ -124,5 +149,15 @@ class PlaybackViewController: UIViewController {
     
     @objc func backButtonTapped() {
         dismiss(animated: true, completion: nil)
+    }
+    
+    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+        if keyPath == "playbackBufferEmpty" {
+            if let isBuffering = viewModel.player?.currentItem?.isPlaybackBufferEmpty, isBuffering {
+                activityIndicator?.startAnimating()
+            } else {
+                activityIndicator?.stopAnimating()
+            }
+        }
     }
 }
